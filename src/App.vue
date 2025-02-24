@@ -1,9 +1,23 @@
 <script setup lang="ts">
-import { str2sd } from './utils'
+const sd = '000079645600000000004306000170000052400125008950000036000408200000000001213560000' // 空是0
+const sd2 = sd.split('').map(Number)
 
-const sd = '000079645600000000004306000170000052400125008950000036000408200000000001213560000'
+//
+const it08 = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+const it19 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-const idx = [
+const gi2hl = it08.map((gong) => {
+  return it08.map((item) => {
+    const h = Math.floor(gong / 3) * 3 + Math.floor(item / 3)
+    const l = (gong % 3) * 3 + (item % 3)
+    return {
+      h,
+      l,
+    }
+  })
+})
+
+const gi2i = [
   [0, 1, 2, 9, 10, 11, 18, 19, 20],
   [3, 4, 5, 12, 13, 14, 21, 22, 23],
   [6, 7, 8, 15, 16, 17, 24, 25, 26],
@@ -14,22 +28,79 @@ const idx = [
   [3 + 54, 4 + 54, 5 + 54, 12 + 54, 13 + 54, 14 + 54, 21 + 54, 22 + 54, 23 + 54],
   [6 + 54, 7 + 54, 8 + 54, 15 + 54, 16 + 54, 17 + 54, 24 + 54, 25 + 54, 26 + 54],
 ]
+
+const allItem = it08.map((g) => {
+  return it08.map((i) => {
+    const { h, l } = gi2hl[g][i]
+    return {
+      g,
+      h,
+      l,
+
+      // 二选一
+      v: sd2[gi2i[g][i]],
+      get maybe() {
+        const all = [...getH(h), ...getL(l), ...getG(g)].map((e) => e.v) // 包含0
+        const 已出现数字 = [...new Set(all)]
+        return it19.filter((i) => !已出现数字.includes(i))
+      },
+    }
+  })
+})
+
+const allItemFlat = allItem.flat()
+
+function getH(h: number): {
+  v: number
+  g: number
+  h: number
+  l: number
+  readonly maybe: number[]
+}[] {
+  return allItemFlat.filter((item) => item.h === h)
+}
+
+function getL(l: number): {
+  v: number
+  g: number
+  h: number
+  l: number
+  readonly maybe: number[]
+}[] {
+  return allItemFlat.filter((item) => item.l === l)
+}
+
+function getG(g: number): {
+  v: number
+  g: number
+  h: number
+  l: number
+  readonly maybe: number[]
+}[] {
+  return allItem[g]
+}
 </script>
 
 <template>
   <sdk class="grid">
-    <box v-for="box of idx" class="grid">
-      <template v-for="item of box">
-        <item v-if="sd[item] !== '0'">
-          {{ sd[item] }}
+    <gong v-for="gong of allItem" class="grid">
+      <template v-for="item of gong">
+        <item v-if="item.v !== 0">
+          {{ item.v }}
         </item>
-        <item v-else class="grid">
-          <maybe v-for="maybe in 9">
+        <item
+          v-else
+          class="grid"
+          :class="{
+            'bg-orange-200': item.maybe.length === 1,
+          }"
+        >
+          <maybe v-for="maybe in item.maybe" :style="`grid-area: m${maybe}`">
             {{ maybe }}
           </maybe>
         </item>
       </template>
-    </box>
+    </gong>
   </sdk>
 </template>
 
@@ -53,10 +124,14 @@ sdk:hover {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
+  grid-template-areas:
+    'm1 m2 m3'
+    'm4 m5 m6'
+    'm7 m8 m9';
   width: 100%;
   aspect-ratio: 1;
 }
-box {
+gong {
   border: 2px solid currentColor;
 }
 item {
