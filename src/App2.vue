@@ -1,35 +1,22 @@
 <script setup lang="ts">
-import { computed, reactive, type ComputedRef } from 'vue'
-
 const sd = '000079645600000000004306000170000052400125008950000036000408200000000001213560000' // 空是0
-const sd2 = reactive(sd.split('').map(Number))
-;(window as any).c = 0
+const sd2 = sd.split('').map(Number)
+
 //
+window.d = 0
 const it08 = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 const it19 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-const gihl = it08
-  .map((g) => {
-    return it08.map((i) => {
-      const h = Math.floor(g / 3) * 3 + Math.floor(i / 3)
-      const l = (g % 3) * 3 + (i % 3)
-      return {
-        g,
-        i,
-        h,
-        l,
-      }
-    })
+const gi2hl = it08.map((gong) => {
+  return it08.map((item) => {
+    const h = Math.floor(gong / 3) * 3 + Math.floor(item / 3)
+    const l = (gong % 3) * 3 + (item % 3)
+    return {
+      h,
+      l,
+    }
   })
-  .flat()
-
-function gi2hl(g: number, i: number) {
-  return gihl.find((e) => e.g === g && e.i === i)!
-}
-
-function hl2gi(h: number, l: number) {
-  return gihl.find((e) => e.h === h && e.l === l)!
-}
+})
 
 const gi2i = [
   [0, 1, 2, 9, 10, 11, 18, 19, 20],
@@ -45,42 +32,59 @@ const gi2i = [
 
 const allItem = it08.map((g) => {
   return it08.map((i) => {
-    const { h, l } = gi2hl(g, i)
-    const v = sd2[gi2i[g][i]]
-
-    const maybes = computed(() => {
-      if (v !== 0) return []
-      const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v))
-      return _
-    })
-
+    const { h, l } = gi2hl[g][i]
     return {
       g,
-      i,
       h,
       l,
 
-      v,
-      // maybes,
-      get maybes() {
-        return maybes.value
+      // dom
+      get G() {
+        return getG(g)
       },
-      get r2(): number | undefined {
-        const Gm = getG(g).flatMap((e) => e.maybes)
-        const Hm = getH(h).flatMap((e) => e.maybes)
-        const Lm = getL(l).flatMap((e) => e.maybes)
+      get H() {
+        return getH(h)
+      },
+      get L() {
+        return getL(l)
+      },
+      get ALL() {
+        return [...this.H, ...this.L, ...this.G]
+      },
 
+      // maybes
+      get Gm() {
+        return this.G.flatMap((e) => e.maybes)
+      },
+      get Hm() {
+        return this.H.flatMap((e) => e.maybes)
+      },
+      get Lm() {
+        return this.L.flatMap((e) => e.maybes)
+      },
+
+      // 二选一
+      v: sd2[gi2i[g][i]],
+      get maybes() {
+        window.d++
+        if (this.v !== 0) return []
+
+        return v2m(this.ALL.map((e) => e.v))
+      },
+
+      get r2() {
         return this.maybes.find((m) => {
-          return (
-            Gm.filter((e) => e === m).length === 1 ||
-            Hm.filter((e) => e === m).length === 1 ||
-            Lm.filter((e) => e === m).length === 1
-          )
+          const g = () => this.Gm.filter((e) => e === m).length === 1
+          const h = () => this.Hm.filter((e) => e === m).length === 1
+          const l = () => this.Lm.filter((e) => e === m).length === 1
+          return g() || h() || l()
         })
       },
     }
   })
 })
+
+const allItemFlat = allItem.flat()
 
 console.log(allItem)
 
@@ -88,29 +92,41 @@ function v2m(v: number[]) {
   return it19.filter((i) => !v.includes(i))
 }
 
-function getH(h: number) {
-  return it08.map((l) => {
-    const { g, i } = hl2gi(h, l)
-    return allItem[g][i]
-  })
+function getH(h: number): {
+  v: number
+  g: number
+  h: number
+  l: number
+  readonly maybes: number[]
+}[] {
+  return allItemFlat.filter((item) => item.h === h)
 }
 
-function getL(l: number) {
-  return it08.map((h) => {
-    const { g, i } = hl2gi(h, l)
-    return allItem[g][i]
-  })
+function getL(l: number): {
+  v: number
+  g: number
+  h: number
+  l: number
+  readonly maybes: number[]
+}[] {
+  return allItemFlat.filter((item) => item.l === l)
 }
 
-function getG(g: number) {
+function getG(g: number): {
+  v: number
+  g: number
+  h: number
+  l: number
+  readonly maybes: number[]
+}[] {
   return allItem[g]
 }
 </script>
 
 <template>
   <sdk class="grid">
-    <gong v-for="(gong, g) of allItem" class="grid">
-      <template v-for="(item, i) of gong">
+    <gong v-for="gong of allItem" class="grid">
+      <template v-for="item of gong">
         <item v-if="item.v !== 0">
           {{ item.v }}
         </item>
@@ -125,7 +141,7 @@ function getG(g: number) {
             v-for="maybe in item.maybes"
             :style="`grid-area: m${maybe}`"
             :class="{
-              'bg-orange-400': item.r2 === maybe,
+              'bg-orange-500': item.r2 === maybe,
             }"
           >
             {{ maybe }}
