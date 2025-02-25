@@ -37,12 +37,46 @@ const allItem = it08.map((g) => {
       h,
       l,
 
+      // dom
+      get G() {
+        return getG(g)
+      },
+      get H() {
+        return getH(h)
+      },
+      get L() {
+        return getL(l)
+      },
+      get ALL() {
+        return [...this.H, ...this.L, ...this.G]
+      },
+
+      // maybes
+      get Gm() {
+        return this.G.flatMap((e) => e.maybes)
+      },
+      get Hm() {
+        return this.H.flatMap((e) => e.maybes)
+      },
+      get Lm() {
+        return this.L.flatMap((e) => e.maybes)
+      },
+
       // 二选一
       v: sd2[gi2i[g][i]],
-      get maybe() {
-        const all = [...getH(h), ...getL(l), ...getG(g)].map((e) => e.v) // 包含0
-        const 已出现数字 = [...new Set(all)]
-        return it19.filter((i) => !已出现数字.includes(i))
+      get maybes() {
+        if (this.v !== 0) return []
+
+        return v2m(this.ALL.map((e) => e.v))
+      },
+
+      get r2() {
+        return this.maybes.find((m) => {
+          const g = () => this.Gm.filter((e) => e === m).length === 1
+          const h = () => this.Hm.filter((e) => e === m).length === 1
+          const l = () => this.Lm.filter((e) => e === m).length === 1
+          return g() || h() || l()
+        })
       },
     }
   })
@@ -50,12 +84,18 @@ const allItem = it08.map((g) => {
 
 const allItemFlat = allItem.flat()
 
+console.log(allItem)
+
+function v2m(v: number[]) {
+  return it19.filter((i) => !v.includes(i))
+}
+
 function getH(h: number): {
   v: number
   g: number
   h: number
   l: number
-  readonly maybe: number[]
+  readonly maybes: number[]
 }[] {
   return allItemFlat.filter((item) => item.h === h)
 }
@@ -65,7 +105,7 @@ function getL(l: number): {
   g: number
   h: number
   l: number
-  readonly maybe: number[]
+  readonly maybes: number[]
 }[] {
   return allItemFlat.filter((item) => item.l === l)
 }
@@ -75,7 +115,7 @@ function getG(g: number): {
   g: number
   h: number
   l: number
-  readonly maybe: number[]
+  readonly maybes: number[]
 }[] {
   return allItem[g]
 }
@@ -92,13 +132,27 @@ function getG(g: number): {
           v-else
           class="grid"
           :class="{
-            'bg-orange-200': item.maybe.length === 1,
+            'bg-orange-200': item.maybes.length === 1,
           }"
         >
-          <maybe v-for="maybe in item.maybe" :style="`grid-area: m${maybe}`">
+          <maybe
+            v-for="maybe in item.maybes"
+            :style="`grid-area: m${maybe}`"
+            :class="{
+              'bg-orange-500': item.r2 === maybe,
+            }"
+          >
             {{ maybe }}
           </maybe>
         </item>
+      </template>
+    </gong>
+  </sdk>
+
+  <sdk class="grid">
+    <gong v-for="gong of allItem" class="grid">
+      <template v-for="item of gong">
+        <item v-if="1"> {{ item.v ? `[${item.v}]` : item.r2 }}</item>
       </template>
     </gong>
   </sdk>
@@ -110,15 +164,12 @@ function getG(g: number): {
   font-size: 10px;
 }
 #app {
+  color: #eee;
   padding: 5px;
+  opacity: 0;
 }
-sdk {
-  color: white;
-  color: #eee;
-  border: 3px solid currentColor;
-}
-sdk:hover {
-  color: #eee;
+#app:hover {
+  opacity: 1;
 }
 .grid {
   display: grid;
@@ -130,6 +181,9 @@ sdk:hover {
     'm7 m8 m9';
   width: 100%;
   aspect-ratio: 1;
+}
+sdk {
+  border: 3px solid currentColor;
 }
 gong {
   border: 2px solid currentColor;
