@@ -43,44 +43,46 @@ const gi2i = [
   [6 + 54, 7 + 54, 8 + 54, 15 + 54, 16 + 54, 17 + 54, 24 + 54, 25 + 54, 26 + 54],
 ]
 
-const allItem = it08.map((g) => {
-  return it08.map((i) => {
-    const { h, l } = gi2hl(g, i)
-    const v = sd2[gi2i[g][i]]
+const allItem = computed(() =>
+  it08.map((g) => {
+    return it08.map((i) => {
+      const { h, l } = gi2hl(g, i)
+      const v = sd2[gi2i[g][i]]
 
-    const maybes = computed(() => {
-      if (v !== 0) return []
-      const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v))
-      return _
+      const maybes = computed(() => {
+        if (v !== 0) return []
+        const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v))
+        return _
+      })
+
+      return {
+        g,
+        i,
+        h,
+        l,
+
+        v,
+        // maybes,
+        get maybes() {
+          return maybes.value
+        },
+        get r2(): number | undefined {
+          const Gm = getG(g).flatMap((e) => e.maybes)
+          const Hm = getH(h).flatMap((e) => e.maybes)
+          const Lm = getL(l).flatMap((e) => e.maybes)
+
+          return this.maybes.find((m) => {
+            return (
+              Gm.filter((e) => e === m).length === 1 ||
+              Hm.filter((e) => e === m).length === 1 ||
+              Lm.filter((e) => e === m).length === 1
+            )
+          })
+        },
+      }
     })
-
-    return {
-      g,
-      i,
-      h,
-      l,
-
-      v,
-      // maybes,
-      get maybes() {
-        return maybes.value
-      },
-      get r2(): number | undefined {
-        const Gm = getG(g).flatMap((e) => e.maybes)
-        const Hm = getH(h).flatMap((e) => e.maybes)
-        const Lm = getL(l).flatMap((e) => e.maybes)
-
-        return this.maybes.find((m) => {
-          return (
-            Gm.filter((e) => e === m).length === 1 ||
-            Hm.filter((e) => e === m).length === 1 ||
-            Lm.filter((e) => e === m).length === 1
-          )
-        })
-      },
-    }
   })
-})
+)
 
 console.log(allItem)
 
@@ -91,19 +93,19 @@ function v2m(v: number[]) {
 function getH(h: number) {
   return it08.map((l) => {
     const { g, i } = hl2gi(h, l)
-    return allItem[g][i]
+    return allItem.value[g][i]
   })
 }
 
 function getL(l: number) {
   return it08.map((h) => {
     const { g, i } = hl2gi(h, l)
-    return allItem[g][i]
+    return allItem.value[g][i]
   })
 }
 
 function getG(g: number) {
-  return allItem[g]
+  return allItem.value[g]
 }
 </script>
 
@@ -120,6 +122,19 @@ function getG(g: number) {
           :class="{
             'bg-orange-200': item.maybes.length === 1,
           }"
+          @click="
+            () => {
+              if (item.maybes.length === 1) {
+                sd2[gi2i[g][i]] = item.maybes[0]
+              }
+              if (item.r2) {
+                console.log(sd2[gi2i[g][i]])
+
+                sd2[gi2i[g][i]] = item.r2
+                console.log(g, i, item.r2, sd2[gi2i[g][i]])
+              }
+            }
+          "
         >
           <maybe
             v-for="maybe in item.maybes"
