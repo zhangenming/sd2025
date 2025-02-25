@@ -5,5 +5,5 @@ import App2 from './App2.vue'
 
 <template>
   <App />
-  <App2 />
+  <!-- <App2 /> -->
 </template>
