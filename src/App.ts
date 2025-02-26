@@ -7,8 +7,11 @@ const sd =
 
 const sd2 = ref(sd.split('').map(Number))
 
-export function resolve(g: number, i: number, val: number) {
-  sd2.value[gi2i[g][i]] = val
+export function resolveV(g: number, i: number, v: number) {
+  sd2.value[gi2i[g][i]] = v
+}
+export function resolveM(g: number, i: number, m: number) {
+  allItem[g][i].deleteMaybes.value.push(m)
 }
 
 ;(window as any).c = 0
@@ -59,10 +62,16 @@ export const allItem = it08.map((g) => {
       return sd2.value[gi2i[g][i]]
     })
 
-    const maybes = computed(() => {
+    const maybes0 = computed(() => {
       if (v.value !== 0) return []
       const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v.value))
       return _
+    })
+
+    const deleteMaybes = ref<number[]>([])
+
+    const maybes = computed(() => {
+      return maybes0.value.filter((m) => !deleteMaybes.value.includes(m))
     })
 
     const r2 = computed(() => {
@@ -124,6 +133,7 @@ export const allItem = it08.map((g) => {
 
       v,
       maybes,
+      deleteMaybes,
       r2,
       c: reactive({
         v,

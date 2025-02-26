@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { allItem, resolve } from './App'
+import { allItem, resolveV, resolveM } from './App'
 </script>
 
 <template>
@@ -18,11 +18,15 @@ import { allItem, resolve } from './App'
           @click="
             () => {
               if (c.maybes.length === 1) {
-                resolve(g, i, c.maybes[0])
+                resolveV(g, i, c.maybes[0])
               }
               if (c.r2) {
-                resolve(g, i, c.r2)
+                resolveV(g, i, c.r2)
               }
+
+              c.r3.forEach((r) => {
+                resolveM(g, i, r)
+              })
             }
           "
         >
