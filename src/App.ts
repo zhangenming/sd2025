@@ -1,4 +1,4 @@
-import { ref, computed, type ComputedRef } from 'vue'
+import { ref, computed, type ComputedRef, reactive } from 'vue'
 import { chunkH, chunkL } from './utils'
 
 const sd = '000080700036000009200000085005600041900040003710005600690000004400000920008090000' // 空是0
@@ -84,16 +84,17 @@ export const allItem = it08.map((g) => {
       v,
       maybes,
       r2,
+      c: reactive({
+        v,
+        maybes,
+        r2,
+      }),
     }
   })
 })
 
-const allH3 = computed(() => {
-  return allItem.flatMap(chunkH)
-})
-const allL3 = computed(() => {
-  return allItem.flatMap(chunkL)
-})
+const allH3 = allItem.flatMap(chunkH)
+const allL3 = allItem.flatMap(chunkL)
 
 function v2m(v: number[]) {
   return it19.filter((i) => !v.includes(i))

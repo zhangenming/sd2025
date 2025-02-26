@@ -5,32 +5,32 @@ import { allItem, resolve } from './App'
 <template>
   <sdk class="grid">
     <gong v-for="(gong, g) of allItem" class="grid">
-      <template v-for="(item, i) of gong">
-        <item v-if="item.v.value !== 0">
-          {{ item.v.value }}
+      <template v-for="({ c }, i) of gong">
+        <item v-if="c.v !== 0">
+          {{ c.v }}
         </item>
         <item
           v-else
           class="grid"
           :class="{
-            'bg-orange-200': item.maybes.value.length === 1,
+            'bg-orange-200': c.maybes.length === 1,
           }"
           @click="
             () => {
-              if (item.maybes.value.length === 1) {
-                resolve(g, i, item.maybes.value[0])
+              if (c.maybes.length === 1) {
+                resolve(g, i, c.maybes[0])
               }
-              if (item.r2.value) {
-                resolve(g, i, item.r2.value)
+              if (c.r2) {
+                resolve(g, i, c.r2)
               }
             }
           "
         >
           <maybe
-            v-for="maybe in item.maybes.value"
+            v-for="maybe in c.maybes"
             :style="`grid-area: m${maybe}`"
             :class="{
-              'bg-orange-400': item.r2.value === maybe,
+              'bg-orange-400': c.r2 === maybe,
             }"
           >
             {{ maybe }}
