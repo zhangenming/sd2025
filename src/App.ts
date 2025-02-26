@@ -1,6 +1,7 @@
 import { computed, reactive } from 'vue'
+import { chunkH, chunkL } from './utils'
 
-const sd = '815003290067000000902500006000408000604000809000209000700001008000000371153800042' // 空是0
+const sd = '000080700036000009200000085005600041900040003710005600690000004400000920008090000' // 空是0
 const sd2 = reactive(sd.split('').map(Number))
 
 export function resolve(g: number, i: number, val: number) {
@@ -47,48 +48,56 @@ const gi2i = [
   [6 + 54, 7 + 54, 8 + 54, 15 + 54, 16 + 54, 17 + 54, 24 + 54, 25 + 54, 26 + 54],
 ]
 
-export const allItem = computed(() => {
-  ;(window as any).c++
+export const allItem = it08.map((g) => {
+  return it08.map((i) => {
+    const { h, l } = gi2hl(g, i)
 
-  return it08.map((g) => {
-    return it08.map((i) => {
-      const { h, l } = gi2hl(g, i)
-      const v = sd2[gi2i[g][i]]
-
-      const maybes = computed(() => {
-        if (v !== 0) return []
-        const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v))
-        return _
-      })
-
-      return {
-        g,
-        i,
-        h,
-        l,
-
-        v,
-        // maybes,
-        // todo set
-        get maybes() {
-          return maybes.value
-        },
-        get r2(): number | undefined {
-          const Gm = getG(g).flatMap((e) => e.maybes)
-          const Hm = getH(h).flatMap((e) => e.maybes)
-          const Lm = getL(l).flatMap((e) => e.maybes)
-
-          return this.maybes.find((m) => {
-            return (
-              Gm.filter((e) => e === m).length === 1 ||
-              Hm.filter((e) => e === m).length === 1 ||
-              Lm.filter((e) => e === m).length === 1
-            )
-          })
-        },
-      }
+    const v = computed(() => {
+      return sd2[gi2i[g][i]]
     })
+    const maybes = computed(() => {
+      if (v.value !== 0) return []
+      const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v))
+      return _
+    })
+    const r2 = computed(() => {
+      const Gm = getG(g).flatMap((e) => e.maybes)
+      const Hm = getH(h).flatMap((e) => e.maybes)
+      const Lm = getL(l).flatMap((e) => e.maybes)
+
+      return maybes.value.find((m) => {
+        return (
+          Gm.filter((e) => e === m).length === 1 ||
+          Hm.filter((e) => e === m).length === 1 ||
+          Lm.filter((e) => e === m).length === 1
+        )
+      })
+    })
+
+    return {
+      g,
+      i,
+      h,
+      l,
+
+      get v() {
+        return v.value
+      },
+      get maybes() {
+        return maybes.value
+      },
+      get r2(): number | undefined {
+        return r2.value
+      },
+    }
   })
+})
+
+const allH3 = computed(() => {
+  return allItem.flatMap(chunkH)
+})
+const allL3 = computed(() => {
+  return allItem.flatMap(chunkL)
 })
 
 function v2m(v: number[]) {
@@ -96,19 +105,20 @@ function v2m(v: number[]) {
 }
 
 function getH(h: number) {
+  ;(window as any).c++
   return it08.map((l) => {
     const { g, i } = hl2gi(h, l)
-    return allItem.value[g][i]
+    return allItem[g][i]
   })
 }
 
 function getL(l: number) {
   return it08.map((h) => {
     const { g, i } = hl2gi(h, l)
-    return allItem.value[g][i]
+    return allItem[g][i]
   })
 }
 
 function getG(g: number) {
-  return allItem.value[g]
+  return allItem[g]
 }
