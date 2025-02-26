@@ -1,11 +1,11 @@
-import { computed, reactive } from 'vue'
+import { ref, computed, type ComputedRef } from 'vue'
 import { chunkH, chunkL } from './utils'
 
 const sd = '000080700036000009200000085005600041900040003710005600690000004400000920008090000' // 空是0
-const sd2 = reactive(sd.split('').map(Number))
+const sd2 = ref(sd.split('').map(Number))
 
 export function resolve(g: number, i: number, val: number) {
-  sd2[gi2i[g][i]] = val
+  sd2.value[gi2i[g][i]] = val
 }
 
 ;(window as any).c = 0
@@ -53,17 +53,18 @@ export const allItem = it08.map((g) => {
     const { h, l } = gi2hl(g, i)
 
     const v = computed(() => {
-      return sd2[gi2i[g][i]]
+      return sd2.value[gi2i[g][i]]
     })
     const maybes = computed(() => {
       if (v.value !== 0) return []
-      const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v))
+      const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v.value))
       return _
     })
+
     const r2 = computed(() => {
-      const Gm = getG(g).flatMap((e) => e.maybes)
-      const Hm = getH(h).flatMap((e) => e.maybes)
-      const Lm = getL(l).flatMap((e) => e.maybes)
+      const Gm = getG(g).flatMap((e) => e.maybes.value)
+      const Hm = getH(h).flatMap((e) => e.maybes.value)
+      const Lm = getL(l).flatMap((e) => e.maybes.value)
 
       return maybes.value.find((m) => {
         return (
@@ -72,7 +73,7 @@ export const allItem = it08.map((g) => {
           Lm.filter((e) => e === m).length === 1
         )
       })
-    })
+    }) as ComputedRef<number | undefined>
 
     return {
       g,
@@ -80,15 +81,9 @@ export const allItem = it08.map((g) => {
       h,
       l,
 
-      get v() {
-        return v.value
-      },
-      get maybes() {
-        return maybes.value
-      },
-      get r2(): number | undefined {
-        return r2.value
-      },
+      v,
+      maybes,
+      r2,
     }
   })
 })
