@@ -30,7 +30,8 @@ import { allItem, resolve } from './App'
             v-for="maybe in c.maybes"
             :style="`grid-area: m${maybe}`"
             :class="{
-              'bg-orange-400': c.r2 === maybe,
+              // 'bg-orange-400': c.r2 === maybe,
+              'bg-red-400': c.r3.includes(maybe),
             }"
           >
             {{ maybe }}
@@ -49,6 +50,7 @@ import { allItem, resolve } from './App'
 #app {
   color: #eee;
   padding: 5px;
+  padding-top: 30px;
   opacity: 0;
 }
 #app:hover {

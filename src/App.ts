@@ -1,7 +1,10 @@
 import { ref, computed, type ComputedRef, reactive } from 'vue'
 import { chunkH, chunkL } from './utils'
 
-const sd = '000080700036000009200000085005600041900040003710005600690000004400000920008090000' // 空是0
+const sd =
+  new URLSearchParams(location.search).get('data') ||
+  '000000000009041320000803046900000700700689002004000003670302000083570200000000000' // 空是0
+
 const sd2 = ref(sd.split('').map(Number))
 
 export function resolve(g: number, i: number, val: number) {
@@ -55,6 +58,7 @@ export const allItem = it08.map((g) => {
     const v = computed(() => {
       return sd2.value[gi2i[g][i]]
     })
+
     const maybes = computed(() => {
       if (v.value !== 0) return []
       const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v.value))
@@ -75,6 +79,43 @@ export const allItem = it08.map((g) => {
       })
     }) as ComputedRef<number | undefined>
 
+    const r3 = computed(() => {
+      const results: number[] = []
+
+      const 会影响段H = allH3
+        .filter((e) => e[0].h === h)
+        .filter((e) => e.every((ee) => ee.l !== l))
+        .map((段) => [段, getG(段[0].g)])
+      const 会影响段L = allL3
+        .filter((e) => e[0].l === l)
+        .filter((e) => e.every((ee) => ee.h !== h))
+        .map((段) => [段, getG(段[0].g)])
+
+      const 会影响段H内部 = allH3
+        .filter((e) => e[0].g === g)
+        .filter((e) => e.every((ee) => ee.h !== h))
+        .map((段) => [段, getH(段[0].h)])
+      const 会影响段L内部 = allL3
+        .filter((e) => e[0].g === g)
+        .filter((e) => e.every((ee) => ee.l !== l))
+        .map((段) => [段, getL(段[0].l)])
+
+      ;[...会影响段H, ...会影响段L, ...会影响段H内部, ...会影响段L内部]
+        .map((e) => e.map((e) => e.flatMap((ee) => ee.maybes.value)))
+        .forEach(([l, r]) => {
+          maybes.value.forEach((m) => {
+            const 段里的数字数量 = l.filter((e) => e === m).length
+            const lhg里的数字数量 = r.filter((e) => e === m).length
+
+            if (段里的数字数量 === lhg里的数字数量 && 段里的数字数量 >= 2) {
+              results.push(m)
+            }
+          })
+        })
+
+      return results
+    })
+
     return {
       g,
       i,
@@ -88,13 +129,18 @@ export const allItem = it08.map((g) => {
         v,
         maybes,
         r2,
+        get r3() {
+          return r3.value
+        },
       }),
     }
   })
 })
 
-const allH3 = allItem.flatMap(chunkH)
-const allL3 = allItem.flatMap(chunkL)
+type Item = (typeof allItem)[number][number]
+
+const allH3 = allItem.map(chunkH).flat()
+const allL3 = allItem.map(chunkL).flat()
 
 function v2m(v: number[]) {
   return it19.filter((i) => !v.includes(i))
