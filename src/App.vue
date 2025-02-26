@@ -1,12 +1,24 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { allItem, resolveV, resolveM } from './App'
+
+const hoverValue = ref(0)
 </script>
 
 <template>
-  <sdk class="grid">
+  <div
+    class="grid sdk"
+    @mouseover="
+      (e: any) => {
+        if (e.target.innerText.length === 1) {
+          hoverValue = Number(e.target.innerText)
+        }
+      }
+    "
+  >
     <gong v-for="(gong, g) of allItem" class="grid">
       <template v-for="({ c }, i) of gong">
-        <item v-if="c.v !== 0">
+        <item v-if="c.v !== 0" :class="{ 'text-black': hoverValue === c.v }">
           {{ c.v }}
         </item>
         <item
@@ -20,6 +32,7 @@ import { allItem, resolveV, resolveM } from './App'
               if (c.maybes.length === 1) {
                 resolveV(g, i, c.maybes[0])
               }
+
               if (c.r2) {
                 resolveV(g, i, c.r2)
               }
@@ -34,7 +47,8 @@ import { allItem, resolveV, resolveM } from './App'
             v-for="maybe in c.maybes"
             :style="`grid-area: m${maybe}`"
             :class="{
-              // 'bg-orange-400': c.r2 === maybe,
+              'text-black': hoverValue === maybe,
+              'bg-orange-400': c.r2 === maybe,
               'bg-red-400': c.r3.includes(maybe),
             }"
           >
@@ -43,7 +57,7 @@ import { allItem, resolveV, resolveM } from './App'
         </item>
       </template>
     </gong>
-  </sdk>
+  </div>
 </template>
 
 <style>
@@ -71,7 +85,7 @@ import { allItem, resolveV, resolveM } from './App'
   width: 100%;
   aspect-ratio: 1;
 }
-sdk {
+.sdk {
   border: 3px solid currentColor;
 }
 gong {
