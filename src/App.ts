@@ -128,6 +128,22 @@ export const allItem = it08.map((g) => {
       return results
     }) as ComputedRef<number[]>
 
+    const resolveM3 = computed(() => {
+      return 得到maybe分布(items9G[g])
+
+      function 得到maybe分布(items: Item[]) {
+        const rs = {} as Record<number, string[]>
+
+        items.forEach((item) => {
+          item.maybe.value.forEach((m) => {
+            if (!rs[m]) rs[m] = []
+            rs[m].push(item.idx)
+          })
+        })
+        return rs
+      }
+    }) as ComputedRef<any>
+
     return {
       idx,
       g,
@@ -146,6 +162,7 @@ export const allItem = it08.map((g) => {
         resolveBasicV2,
         resolveM1,
         resolveM2,
+        resolveM3,
       }),
     }
 
