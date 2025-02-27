@@ -28,9 +28,6 @@ const hoverValue = ref(0)
           :class="{
             // 出错判断1
             'bg-red-600': c.maybe.length === 0,
-
-            // 基本解V1
-            'bg-orange-200': c.resolveBasicV1,
           }"
           @click="
             () => {
@@ -54,12 +51,13 @@ const hoverValue = ref(0)
               // hover
               'text-black': hoverValue === maybe,
 
-              // 基本解V2
-              'bg-orange-400': c.resolveBasicV2 === maybe,
+              // 基本解
+              'bg-blue-200': c.resolveBasicV1 === maybe,
+              'bg-blue-400': c.resolveBasicV2 === maybe,
 
-              // 排除解M
-              'bg-red-400': c.resolveM1.includes(maybe),
-              'bg-red-500': c.resolveM2.includes(maybe),
+              // 排除解
+              'bg-red-200': c.resolveM1.includes(maybe),
+              'bg-red-600': c.resolveM2.includes(maybe),
             }"
           >
             {{ maybe }}
@@ -73,8 +71,8 @@ const hoverValue = ref(0)
   <div class="grid sdk">
     <gong v-for="(gong, g) of allItem" class="grid">
       <template v-for="({ c }, i) of gong">
-        <item>
-          {{ c.resolveM2 }}
+        <item :title="c.resolveM3">
+          {{ c.resolveM3 }}
         </item>
       </template>
     </gong>

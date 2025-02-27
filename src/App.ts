@@ -1,5 +1,5 @@
 import { ref, computed, type ComputedRef, reactive, effect } from 'vue'
-import { chunkH, chunkL, countLen, findSameElements, getH, getL, gi2hl, it08, v2m, 去重 } from './utils'
+import { chunkH, countLen, findSameElements, getH, getL, gi2hl, it08, v2m, 去重 } from './utils'
 
 const sd =
   new URLSearchParams(location.search).get('data') ||
@@ -32,6 +32,7 @@ const gi2i = [
 export const allItem = it08.map((g) => {
   return it08.map((i) => {
     const { h, l } = gi2hl(g, i)
+    const idx = `${g}-${i}`
 
     const v = computed(() => {
       return sd2.value[gi2i[g][i]]
@@ -39,7 +40,8 @@ export const allItem = it08.map((g) => {
 
     const maybe = computed(() => {
       if (v.value !== 0) return []
-      const 所有看见的数字 = [...allG[g], ...allH[h], ...allL[l]].map((e) => e.v.value)
+
+      const 所有看见的数字 = [...items9G[g], ...items9H[h], ...items9L[l]].map((e) => e.v.value)
       return v2m(所有看见的数字).filter((m) => !lockedMaybe.value.includes(m))
     }) as ComputedRef<number[]>
 
@@ -59,7 +61,6 @@ export const allItem = it08.map((g) => {
 
     // 这个item里的maybe 其中一个m只能填在这个item (这个m 只能填到这个item)
     const resolveBasicV2 = computed(() => {
-      // todo fix
       const Gm = maybesG[g].value
       const Hm = maybesH[h].value
       const Lm = maybesL[l].value
@@ -74,66 +75,49 @@ export const allItem = it08.map((g) => {
       // 会有多种方案同时排除一个m
       const results: number[] = []
 
-      const 会影响段H = allH3
-        .filter((e) => e[0].h === h)
-        .filter((e) => e.every((ee) => ee.l !== l))
-        .map((段) => [段, allG[段[0].g]])
-      const 会影响段L = allL3
-        .filter((e) => e[0].l === l)
-        .filter((e) => e.every((ee) => ee.h !== h))
-        .map((段) => [段, allG[段[0].g]])
+      const 影响段H宫外 = items3H
+        .filter(同行)
+        .filter(过滤掉含有本格的items3)
+        .map((段) => [getMaybesFlat_v(段), maybesG[段[0].g].value])
+      const 影响段L宫外 = items3L
+        .filter(同列)
+        .filter(过滤掉含有本格的items3)
+        .map((段) => [getMaybesFlat_v(段), maybesG[段[0].g].value])
+      const 影响段H宫内 = items3H
+        .filter(同宫)
+        .filter(过滤掉含有本格的items3)
+        .map((段) => [getMaybesFlat_v(段), maybesH[段[0].h].value])
+      const 影响段L宫内 = items3L
+        .filter(同宫)
+        .filter(过滤掉含有本格的items3)
+        .map((段) => [getMaybesFlat_v(段), maybesL[段[0].l].value])
 
-      const 会影响段H内部 = allH3
-        .filter((e) => e[0].g === g)
-        .filter((e) => e.every((ee) => ee.h !== h))
-        .map((段) => [段, allH[段[0].h]])
-      const 会影响段L内部 = allL3
-        .filter((e) => e[0].g === g)
-        .filter((e) => e.every((ee) => ee.l !== l))
-        .map((段) => [段, allL[段[0].l]])
+      ;[...影响段H宫外, ...影响段L宫外, ...影响段H宫内, ...影响段L宫内].forEach(([l, r]) => {
+        maybe.value.forEach((m) => {
+          const 段len = countLen(l, m)
+          const XLen = countLen(r, m)
 
-      ;[...会影响段H, ...会影响段L, ...会影响段H内部, ...会影响段L内部]
-        .map((e) => e.map(getMaybes_v))
-        .forEach(([l, r]) => {
-          maybe.value.forEach((m) => {
-            const 段len = countLen(l, m)
-            const lhgLen = countLen(r, m)
-
-            if (段len === lhgLen && 段len >= 2) {
-              results.push(m)
-            }
-          })
+          if (段len === XLen && 段len >= 2) {
+            results.push(m)
+          }
         })
+      })
 
       return results
+
+      function 过滤掉含有本格的items3(items: Item[]) {
+        return items.every((e) => e.idx !== idx)
+      }
     })
 
     //todo 宫行列的maybes
     const resolveM2 = computed(() => {
       const results: number[] = []
 
-      const itemsG = findSameElements(
-        allG[g]
-          .filter(过滤掉本格)
-          .filter(得到m长度为2的格)
-          .map((e) => e.maybe.value)
-      )
+      const helper = (当前ghl: Item[]) =>
+        findSameElements(getMaybes_v(当前ghl.filter(过滤掉本格).filter(得到m长度为2的格)))
 
-      const itemsH = findSameElements(
-        allH[h]
-          .filter(过滤掉本格)
-          .filter(得到m长度为2的格)
-          .map((e) => e.maybe.value)
-      )
-
-      const itemsL = findSameElements(
-        allL[l]
-          .filter(过滤掉本格)
-          .filter(得到m长度为2的格)
-          .map((e) => e.maybe.value)
-      )
-
-      ;[...itemsG, ...itemsH, ...itemsL].forEach((e) => {
+      ;[...helper(items9G[g]), ...helper(items9H[h]), ...helper(items9L[l])].forEach((e) => {
         maybe.value.forEach((m) => {
           if (e.sameVal.includes(m)) {
             results.push(m)
@@ -145,6 +129,7 @@ export const allItem = it08.map((g) => {
     }) as ComputedRef<number[]>
 
     return {
+      idx,
       g,
       i,
       h,
@@ -165,7 +150,7 @@ export const allItem = it08.map((g) => {
     }
 
     function 过滤掉本格(item: Item) {
-      return !(item.g === g && item.i === i)
+      return !(item.idx === idx)
     }
     function 得到含m的格(m: number) {
       return (item: Item) => item.maybe.value.includes(m)
@@ -173,34 +158,48 @@ export const allItem = it08.map((g) => {
     function 得到m长度为2的格(item: Item) {
       return item.maybe.value.length === 2
     }
+
+    function 同行(items: Item[]) {
+      return items[0].h === h
+    }
+    function 同列(items: Item[]) {
+      return items[0].l === l
+    }
+    function 同宫(items: Item[]) {
+      return items[0].g === g
+    }
   })
 })
 
 type Item = (typeof allItem)[number][number]
 
 function getMaybes_v(items: Item[]) {
-  return items.map((e) => e.maybe.value).flat()
+  return items.map((e) => e.maybe.value)
+}
+function getMaybesFlat_v(items: Item[]) {
+  return getMaybes_v(items).flat()
 }
 
-const allH3 = allItem.map(chunkH).flat()
-const allL3 = allItem.map(chunkL).flat()
+const items9G = allItem
+const items9H = it08.map(getH)
+const items9L = it08.map(getL)
 
-const allG = allItem
-const allH = it08.map(getH)
-const allL = it08.map(getL)
+const items3H = items9H.map(chunkH).flat()
+const items3L = items9L.map(chunkH).flat()
 
-const maybesG = allG.map((g) => {
-  return computed(() => getMaybes_v(g))
+const maybesG = items9G.map((g) => {
+  return computed(() => getMaybesFlat_v(g))
 })
-const maybesH = allH.map((h) => {
-  return computed(() => getMaybes_v(h))
+const maybesH = items9H.map((h) => {
+  return computed(() => getMaybesFlat_v(h))
 })
-const maybesL = allL.map((l) => {
-  return computed(() => getMaybes_v(l))
+const maybesL = items9L.map((l) => {
+  return computed(() => getMaybesFlat_v(l))
 })
 
+// 错误监测
 effect(() => {
-  ;[...allG, ...allH, ...allL].forEach((x) => {
+  ;[...items9G, ...items9H, ...items9L].forEach((x) => {
     // 检测ghl数字是否冲突
     const allV = x.map((e) => e.v.value).filter((e) => e !== 0)
     if (allV.length !== 去重(allV).length) {
@@ -209,7 +208,7 @@ effect(() => {
 
     // 检测是不是某个数没有位置
     const 剩余位置 = 9 - allV.length
-    const 需要位置 = 去重(getMaybes_v(x)).length
+    const 需要位置 = 去重(getMaybesFlat_v(x)).length
     if (剩余位置 !== 需要位置) {
       console.log(2, 剩余位置, 需要位置)
     }
