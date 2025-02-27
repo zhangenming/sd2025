@@ -90,10 +90,6 @@ export function getL(l: number) {
   })
 }
 
-export function getG(g: number) {
-  return allItem[g]
-}
-
 export function findSameElements(arr: number[][]) {
   // 用对象存储每个元素出现的索引
   const indexMap = {} as Record<string, number[]>

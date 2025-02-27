@@ -26,7 +26,11 @@ const hoverValue = ref(0)
           v-else
           class="grid"
           :class="{
-            'bg-orange-200': c.maybe.length === 1,
+            // 出错判断1
+            'bg-red-600': c.maybe.length === 0,
+
+            // 基本解V1
+            'bg-orange-200': c.resolveBasicV1,
           }"
           @click="
             () => {
@@ -50,8 +54,7 @@ const hoverValue = ref(0)
               // hover
               'text-black': hoverValue === maybe,
 
-              // 基本解V
-              'bg-orange-200': c.resolveBasicV1 === maybe,
+              // 基本解V2
               'bg-orange-400': c.resolveBasicV2 === maybe,
 
               // 排除解M

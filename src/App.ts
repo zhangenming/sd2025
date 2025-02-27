@@ -1,4 +1,4 @@
-import { ref, computed, type ComputedRef, reactive } from 'vue'
+import { ref, computed, type ComputedRef, reactive, effect } from 'vue'
 import { chunkH, chunkL, countLen, findSameElements, getH, getL, gi2hl, it08, v2m } from './utils'
 
 const sd =
@@ -192,9 +192,13 @@ const allL = it08.map(getL)
 const maybesG = allG.map((g) => {
   return computed(() => getMaybes_v(g))
 })
-const maybesH = allItem.map((h) => {
+const maybesH = allH.map((h) => {
   return computed(() => getMaybes_v(h))
 })
-const maybesL = allItem.map((l) => {
+const maybesL = allL.map((l) => {
   return computed(() => getMaybes_v(l))
+})
+
+effect(() => {
+  maybesG.forEach((g) => {})
 })
