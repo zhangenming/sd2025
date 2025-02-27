@@ -25,31 +25,27 @@ const hoverValue = ref(0)
           v-else
           class="grid"
           :class="{
-            'bg-orange-200': c.maybes.length === 1,
+            'bg-orange-200': c.maybe.length === 1,
           }"
           @click="
             () => {
-              if (c.maybes.length === 1) {
-                resolveV(g, i, c.maybes[0])
-              }
+              resolveV(g, i, c.resolveBasicV1)
 
-              if (c.r2) {
-                resolveV(g, i, c.r2)
-              }
+              resolveV(g, i, c.resolveBasicV2)
 
-              c.r3.forEach((r) => {
+              c.resolveM1.forEach((r) => {
                 resolveM(g, i, r)
               })
             }
           "
         >
           <maybe
-            v-for="maybe in c.maybes"
+            v-for="maybe in c.maybe"
             :style="`grid-area: m${maybe}`"
             :class="{
               'text-black': hoverValue === maybe,
-              'bg-orange-400': c.r2 === maybe,
-              'bg-red-400': c.r3.includes(maybe),
+              'bg-orange-400': c.resolveBasicV2 === maybe,
+              'bg-red-400': c.resolveM1.includes(maybe),
             }"
           >
             {{ maybe }}

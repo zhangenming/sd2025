@@ -1,5 +1,5 @@
 import { ref, computed, type ComputedRef, reactive } from 'vue'
-import { chunkH, chunkL } from './utils'
+import { chunkH, chunkL, countLen } from './utils'
 
 const sd =
   new URLSearchParams(location.search).get('data') ||
@@ -7,11 +7,13 @@ const sd =
 
 const sd2 = ref(sd.split('').map(Number))
 
-export function resolveV(g: number, i: number, v: number) {
+export function resolveV(g: number, i: number, v: number | false | undefined) {
+  if (!v) return
   sd2.value[gi2i[g][i]] = v
 }
 export function resolveM(g: number, i: number, m: number) {
-  allItem[g][i].deleteMaybes.value.push(m)
+  if (!m) return
+  allItem[g][i].lockedMaybe.value.push(m)
 }
 
 ;(window as any).c = 0
@@ -62,33 +64,39 @@ export const allItem = it08.map((g) => {
       return sd2.value[gi2i[g][i]]
     })
 
-    const maybes0 = computed(() => {
+    const maybe = computed(() => {
       if (v.value !== 0) return []
       const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v.value))
-      return _
+      return _.filter((m) => !lockedMaybe.value.includes(m))
     })
 
-    const deleteMaybes = ref<number[]>([])
+    const lockedMaybe = ref<number[]>([])
 
-    const maybes = computed(() => {
-      return maybes0.value.filter((m) => !deleteMaybes.value.includes(m))
+    //
+    //
+    // 解题逻辑
+    // 现在有个问题 sdk的解题逻辑和 vue的.value逻辑混合到了一起
+    //
+    //
+
+    // 这个框只有一个maybe (这个框里 只能填这个数字)
+    const resolveBasicV1 = computed(() => {
+      return maybe.value.length === 1 && maybe.value[0]
     })
 
-    const r2 = computed(() => {
-      const Gm = getG(g).flatMap((e) => e.maybes.value)
-      const Hm = getH(h).flatMap((e) => e.maybes.value)
-      const Lm = getL(l).flatMap((e) => e.maybes.value)
+    // 这个框里的maybe 其中一个数字只能填在这个框 (这个数字 只能填到这个框)
+    const resolveBasicV2 = computed(() => {
+      const Gm = getG(g).flatMap((e) => e.maybe.value)
+      const Hm = getH(h).flatMap((e) => e.maybe.value)
+      const Lm = getL(l).flatMap((e) => e.maybe.value)
 
-      return maybes.value.find((m) => {
-        return (
-          Gm.filter((e) => e === m).length === 1 ||
-          Hm.filter((e) => e === m).length === 1 ||
-          Lm.filter((e) => e === m).length === 1
-        )
+      return maybe.value.find((m) => {
+        return countLen(Gm, m) === 1 || countLen(Hm, m) === 1 || countLen(Lm, m) === 1
       })
     }) as ComputedRef<number | undefined>
 
-    const r3 = computed(() => {
+    // 只看一个数
+    const resolveM1 = computed(() => {
       const results: number[] = []
 
       const 会影响段H = allH3
@@ -110,13 +118,13 @@ export const allItem = it08.map((g) => {
         .map((段) => [段, getL(段[0].l)])
 
       ;[...会影响段H, ...会影响段L, ...会影响段H内部, ...会影响段L内部]
-        .map((e) => e.map((e) => e.flatMap((ee) => ee.maybes.value)))
+        .map((e) => e.map((e) => e.flatMap((ee) => ee.maybe.value)))
         .forEach(([l, r]) => {
-          maybes.value.forEach((m) => {
-            const 段里的数字数量 = l.filter((e) => e === m).length
-            const lhg里的数字数量 = r.filter((e) => e === m).length
+          maybe.value.forEach((m) => {
+            const 段len = countLen(l, m)
+            const lhgLen = countLen(r, m)
 
-            if (段里的数字数量 === lhg里的数字数量 && 段里的数字数量 >= 2) {
+            if (段len === lhgLen && 段len >= 2) {
               results.push(m)
             }
           })
@@ -125,6 +133,8 @@ export const allItem = it08.map((g) => {
       return results
     })
 
+    //todo 宫行列的maybes
+
     return {
       g,
       i,
@@ -132,16 +142,15 @@ export const allItem = it08.map((g) => {
       l,
 
       v,
-      maybes,
-      deleteMaybes,
-      r2,
+      maybe,
+      lockedMaybe,
+
       c: reactive({
         v,
-        maybes,
-        r2,
-        get r3() {
-          return r3.value
-        },
+        maybe,
+        resolveBasicV1,
+        resolveBasicV2,
+        resolveM1,
       }),
     }
   })

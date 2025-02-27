@@ -36,3 +36,8 @@ export function chunkL<T>(arr: T[]) {
   }
   return result
 }
+
+// 数组含有某元素的数量
+export function countLen<T>(arr: T[], value: T) {
+  return arr.filter((e) => e === value).length
+}

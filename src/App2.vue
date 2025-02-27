@@ -52,28 +52,28 @@ const allItem = it08.map((g) => {
         return [...this.H, ...this.L, ...this.G]
       },
 
-      // maybes
+      // maybe
       get Gm() {
-        return this.G.flatMap((e) => e.maybes)
+        return this.G.flatMap((e) => e.maybe)
       },
       get Hm() {
-        return this.H.flatMap((e) => e.maybes)
+        return this.H.flatMap((e) => e.maybe)
       },
       get Lm() {
-        return this.L.flatMap((e) => e.maybes)
+        return this.L.flatMap((e) => e.maybe)
       },
 
       // 二选一
       v: sd2[gi2i[g][i]],
-      get maybes() {
+      get maybe() {
         window.d++
         if (this.v !== 0) return []
 
         return v2m(this.ALL.map((e) => e.v))
       },
 
-      get r2() {
-        return this.maybes.find((m) => {
+      get resolveBasicV2() {
+        return this.maybe.find((m) => {
           const g = () => this.Gm.filter((e) => e === m).length === 1
           const h = () => this.Hm.filter((e) => e === m).length === 1
           const l = () => this.Lm.filter((e) => e === m).length === 1
@@ -97,7 +97,7 @@ function getH(h: number): {
   g: number
   h: number
   l: number
-  readonly maybes: number[]
+  readonly maybe: number[]
 }[] {
   return allItemFlat.filter((item) => item.h === h)
 }
@@ -107,7 +107,7 @@ function getL(l: number): {
   g: number
   h: number
   l: number
-  readonly maybes: number[]
+  readonly maybe: number[]
 }[] {
   return allItemFlat.filter((item) => item.l === l)
 }
@@ -117,7 +117,7 @@ function getG(g: number): {
   g: number
   h: number
   l: number
-  readonly maybes: number[]
+  readonly maybe: number[]
 }[] {
   return allItem[g]
 }
@@ -134,14 +134,14 @@ function getG(g: number): {
           v-else
           class="grid"
           :class="{
-            'bg-orange-200': item.maybes.length === 1,
+            'bg-orange-200': item.maybe.length === 1,
           }"
         >
           <maybe
-            v-for="maybe in item.maybes"
+            v-for="maybe in item.maybe"
             :style="`grid-area: m${maybe}`"
             :class="{
-              'bg-orange-500': item.r2 === maybe,
+              'bg-orange-500': item.resolveBasicV2 === maybe,
             }"
           >
             {{ maybe }}
@@ -154,7 +154,7 @@ function getG(g: number): {
   <!-- <sdk class="grid">
     <gong v-for="gong of allItem" class="grid">
       <template v-for="item of gong">
-        <item v-if="1"> {{ item.v ? `[${item.v}]` : item.r2 }}</item>
+        <item v-if="1"> {{ item.v ? `[${item.v}]` : item.resolveBasicV2 }}</item>
       </template>
     </gong>
   </sdk> -->
