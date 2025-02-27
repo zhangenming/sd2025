@@ -1,5 +1,5 @@
 import { ref, computed, type ComputedRef, reactive } from 'vue'
-import { chunkH, chunkL, countLen, findSameElements, getG, getH, getL, gi2hl, it08, v2m } from './utils'
+import { chunkH, chunkL, countLen, findSameElements, getH, getL, gi2hl, it08, v2m } from './utils'
 
 const sd =
   new URLSearchParams(location.search).get('data') ||
@@ -29,8 +29,6 @@ const gi2i = [
   [3 + 54, 4 + 54, 5 + 54, 12 + 54, 13 + 54, 14 + 54, 21 + 54, 22 + 54, 23 + 54],
   [6 + 54, 7 + 54, 8 + 54, 15 + 54, 16 + 54, 17 + 54, 24 + 54, 25 + 54, 26 + 54],
 ]
-//todo 错误判断
-
 export const allItem = it08.map((g) => {
   return it08.map((i) => {
     const { h, l } = gi2hl(g, i)
@@ -41,7 +39,7 @@ export const allItem = it08.map((g) => {
 
     const maybe = computed(() => {
       if (v.value !== 0) return []
-      const 所有看见的数字 = [...getG(g), ...getH(h), ...getL(l)].map((e) => e.v.value)
+      const 所有看见的数字 = [...allG[g], ...allH[h], ...allL[l]].map((e) => e.v.value)
       return v2m(所有看见的数字).filter((m) => !lockedMaybe.value.includes(m))
     }) as ComputedRef<number[]>
 
@@ -79,20 +77,20 @@ export const allItem = it08.map((g) => {
       const 会影响段H = allH3
         .filter((e) => e[0].h === h)
         .filter((e) => e.every((ee) => ee.l !== l))
-        .map((段) => [段, getG(段[0].g)])
+        .map((段) => [段, allG[段[0].g]])
       const 会影响段L = allL3
         .filter((e) => e[0].l === l)
         .filter((e) => e.every((ee) => ee.h !== h))
-        .map((段) => [段, getG(段[0].g)])
+        .map((段) => [段, allG[段[0].g]])
 
       const 会影响段H内部 = allH3
         .filter((e) => e[0].g === g)
         .filter((e) => e.every((ee) => ee.h !== h))
-        .map((段) => [段, getH(段[0].h)])
+        .map((段) => [段, allH[段[0].h]])
       const 会影响段L内部 = allL3
         .filter((e) => e[0].g === g)
         .filter((e) => e.every((ee) => ee.l !== l))
-        .map((段) => [段, getL(段[0].l)])
+        .map((段) => [段, allL[段[0].l]])
 
       ;[...会影响段H, ...会影响段L, ...会影响段H内部, ...会影响段L内部]
         .map((e) => e.map(getMaybes_v))
@@ -115,21 +113,21 @@ export const allItem = it08.map((g) => {
       const results: number[] = []
 
       const itemsG = findSameElements(
-        getG(g)
+        allG[g]
           .filter(过滤掉本格)
           .filter(得到m长度为2的格)
           .map((e) => e.maybe.value)
       )
 
       const itemsH = findSameElements(
-        getH(h)
+        allH[h]
           .filter(过滤掉本格)
           .filter(得到m长度为2的格)
           .map((e) => e.maybe.value)
       )
 
       const itemsL = findSameElements(
-        getL(l)
+        allL[l]
           .filter(过滤掉本格)
           .filter(得到m长度为2的格)
           .map((e) => e.maybe.value)
@@ -187,7 +185,11 @@ function getMaybes_v(items: Item[]) {
 const allH3 = allItem.map(chunkH).flat()
 const allL3 = allItem.map(chunkL).flat()
 
-const maybesG = allItem.map((g) => {
+const allG = allItem
+const allH = it08.map(getH)
+const allL = it08.map(getL)
+
+const maybesG = allG.map((g) => {
   return computed(() => getMaybes_v(g))
 })
 const maybesH = allItem.map((h) => {
