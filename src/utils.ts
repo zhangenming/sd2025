@@ -113,3 +113,7 @@ export function findSameElements(arr: number[][]) {
 
   return result
 }
+
+export function 去重<T>(arr: T[]) {
+  return [...new Set(arr)]
+}

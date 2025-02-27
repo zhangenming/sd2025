@@ -1,5 +1,5 @@
 import { ref, computed, type ComputedRef, reactive, effect } from 'vue'
-import { chunkH, chunkL, countLen, findSameElements, getH, getL, gi2hl, it08, v2m } from './utils'
+import { chunkH, chunkL, countLen, findSameElements, getH, getL, gi2hl, it08, v2m, 去重 } from './utils'
 
 const sd =
   new URLSearchParams(location.search).get('data') ||
@@ -200,5 +200,18 @@ const maybesL = allL.map((l) => {
 })
 
 effect(() => {
-  maybesG.forEach((g) => {})
+  ;[...allG, ...allH, ...allL].forEach((x) => {
+    // 检测ghl数字是否冲突
+    const allV = x.map((e) => e.v.value).filter((e) => e !== 0)
+    if (allV.length !== 去重(allV).length) {
+      console.log(1, allV)
+    }
+
+    // 检测是不是某个数没有位置
+    const 剩余位置 = 9 - allV.length
+    const 需要位置 = 去重(getMaybes_v(x)).length
+    if (剩余位置 !== 需要位置) {
+      console.log(2, 剩余位置, 需要位置)
+    }
+  })
 })
