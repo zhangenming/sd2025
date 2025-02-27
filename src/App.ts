@@ -1,5 +1,5 @@
 import { ref, computed, type ComputedRef, reactive } from 'vue'
-import { chunkH, chunkL, countLen } from './utils'
+import { chunkH, chunkL, countLen, getG, getH, getL, gi2hl, it08, v2m } from './utils'
 
 const sd =
   new URLSearchParams(location.search).get('data') ||
@@ -17,32 +17,6 @@ export function resolveM(g: number, i: number, m: number) {
 }
 
 ;(window as any).c = 0
-//
-const it08 = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-const it19 = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-const gihl = it08
-  .map((g) => {
-    return it08.map((i) => {
-      const h = Math.floor(g / 3) * 3 + Math.floor(i / 3)
-      const l = (g % 3) * 3 + (i % 3)
-      return {
-        g,
-        i,
-        h,
-        l,
-      }
-    })
-  })
-  .flat()
-
-function gi2hl(g: number, i: number) {
-  return gihl.find((e) => e.g === g && e.i === i)!
-}
-
-function hl2gi(h: number, l: number) {
-  return gihl.find((e) => e.h === h && e.l === l)!
-}
 
 const gi2i = [
   [0, 1, 2, 9, 10, 11, 18, 19, 20],
@@ -86,9 +60,9 @@ export const allItem = it08.map((g) => {
 
     // 这个框里的maybe 其中一个数字只能填在这个框 (这个数字 只能填到这个框)
     const resolveBasicV2 = computed(() => {
-      const Gm = getG(g).flatMap((e) => e.maybe.value)
-      const Hm = getH(h).flatMap((e) => e.maybe.value)
-      const Lm = getL(l).flatMap((e) => e.maybe.value)
+      const Gm = getMaybes_v(getG(g))
+      const Hm = getMaybes_v(getH(h))
+      const Lm = getMaybes_v(getL(l))
 
       return maybe.value.find((m) => {
         return countLen(Gm, m) === 1 || countLen(Hm, m) === 1 || countLen(Lm, m) === 1
@@ -118,7 +92,7 @@ export const allItem = it08.map((g) => {
         .map((段) => [段, getL(段[0].l)])
 
       ;[...会影响段H, ...会影响段L, ...会影响段H内部, ...会影响段L内部]
-        .map((e) => e.map((e) => e.flatMap((ee) => ee.maybe.value)))
+        .map((e) => e.map(getMaybes_v))
         .forEach(([l, r]) => {
           maybe.value.forEach((m) => {
             const 段len = countLen(l, m)
@@ -158,28 +132,9 @@ export const allItem = it08.map((g) => {
 
 type Item = (typeof allItem)[number][number]
 
+function getMaybes_v(items: Item[]) {
+  return items.map((e) => e.maybe.value).flat()
+}
+
 const allH3 = allItem.map(chunkH).flat()
 const allL3 = allItem.map(chunkL).flat()
-
-function v2m(v: number[]) {
-  return it19.filter((i) => !v.includes(i))
-}
-
-function getH(h: number) {
-  ;(window as any).c++
-  return it08.map((l) => {
-    const { g, i } = hl2gi(h, l)
-    return allItem[g][i]
-  })
-}
-
-function getL(l: number) {
-  return it08.map((h) => {
-    const { g, i } = hl2gi(h, l)
-    return allItem[g][i]
-  })
-}
-
-function getG(g: number) {
-  return allItem[g]
-}
