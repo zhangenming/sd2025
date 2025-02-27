@@ -3,7 +3,7 @@ import { chunkH, chunkL, countLen, findSameElements, getH, getL, gi2hl, it08, v2
 
 const sd =
   new URLSearchParams(location.search).get('data') ||
-  '000000000009041320000803046900000700700689002004000003670302000083570200000000000' // 空是0
+  '000680200100004030054000000080200007010040020900001060000000580090400006003078000' // 空是0
 
 const sd2 = ref(sd.split('').map(Number))
 
