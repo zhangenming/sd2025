@@ -21,6 +21,7 @@ const hoverValue = ref(0)
         <item v-if="c.v !== 0" :class="{ 'text-black': hoverValue === c.v }">
           {{ c.v }}
         </item>
+
         <item
           v-else
           class="grid"
@@ -36,6 +37,9 @@ const hoverValue = ref(0)
               c.resolveM1.forEach((r) => {
                 resolveM(g, i, r)
               })
+              c.resolveM2.forEach((r) => {
+                resolveM(g, i, r)
+              })
             }
           "
         >
@@ -43,13 +47,31 @@ const hoverValue = ref(0)
             v-for="maybe in c.maybe"
             :style="`grid-area: m${maybe}`"
             :class="{
+              // hover
               'text-black': hoverValue === maybe,
+
+              // 基本解V
+              'bg-orange-200': c.resolveBasicV1 === maybe,
               'bg-orange-400': c.resolveBasicV2 === maybe,
+
+              // 排除解M
               'bg-red-400': c.resolveM1.includes(maybe),
+              'bg-red-500': c.resolveM2.includes(maybe),
             }"
           >
             {{ maybe }}
           </maybe>
+        </item>
+      </template>
+    </gong>
+  </div>
+
+  <!-- test -->
+  <div class="grid sdk">
+    <gong v-for="(gong, g) of allItem" class="grid">
+      <template v-for="({ c }, i) of gong">
+        <item>
+          {{ c.resolveM2 }}
         </item>
       </template>
     </gong>

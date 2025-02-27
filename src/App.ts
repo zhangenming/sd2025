@@ -1,5 +1,5 @@
 import { ref, computed, type ComputedRef, reactive } from 'vue'
-import { chunkH, chunkL, countLen, getG, getH, getL, gi2hl, it08, v2m } from './utils'
+import { chunkH, chunkL, countLen, findSameElements, getG, getH, getL, gi2hl, it08, v2m } from './utils'
 
 const sd =
   new URLSearchParams(location.search).get('data') ||
@@ -29,6 +29,7 @@ const gi2i = [
   [3 + 54, 4 + 54, 5 + 54, 12 + 54, 13 + 54, 14 + 54, 21 + 54, 22 + 54, 23 + 54],
   [6 + 54, 7 + 54, 8 + 54, 15 + 54, 16 + 54, 17 + 54, 24 + 54, 25 + 54, 26 + 54],
 ]
+//todo 错误判断
 
 export const allItem = it08.map((g) => {
   return it08.map((i) => {
@@ -40,9 +41,9 @@ export const allItem = it08.map((g) => {
 
     const maybe = computed(() => {
       if (v.value !== 0) return []
-      const _ = v2m([...getG(g), ...getH(h), ...getL(l)].map((e) => e.v.value))
-      return _.filter((m) => !lockedMaybe.value.includes(m))
-    })
+      const 所有看见的数字 = [...getG(g), ...getH(h), ...getL(l)].map((e) => e.v.value)
+      return v2m(所有看见的数字).filter((m) => !lockedMaybe.value.includes(m))
+    }) as ComputedRef<number[]>
 
     const lockedMaybe = ref<number[]>([])
 
@@ -53,16 +54,17 @@ export const allItem = it08.map((g) => {
     //
     //
 
-    // 这个框只有一个maybe (这个框里 只能填这个数字)
+    // 这个item只有一个m (这个item里 只能填这个m)
     const resolveBasicV1 = computed(() => {
       return maybe.value.length === 1 && maybe.value[0]
     })
 
-    // 这个框里的maybe 其中一个数字只能填在这个框 (这个数字 只能填到这个框)
+    // 这个item里的maybe 其中一个m只能填在这个item (这个m 只能填到这个item)
     const resolveBasicV2 = computed(() => {
-      const Gm = getMaybes_v(getG(g))
-      const Hm = getMaybes_v(getH(h))
-      const Lm = getMaybes_v(getL(l))
+      // todo fix
+      const Gm = maybesG[g].value
+      const Hm = maybesH[h].value
+      const Lm = maybesL[l].value
 
       return maybe.value.find((m) => {
         return countLen(Gm, m) === 1 || countLen(Hm, m) === 1 || countLen(Lm, m) === 1
@@ -71,6 +73,7 @@ export const allItem = it08.map((g) => {
 
     // 只看一个数
     const resolveM1 = computed(() => {
+      // 会有多种方案同时排除一个m
       const results: number[] = []
 
       const 会影响段H = allH3
@@ -108,6 +111,40 @@ export const allItem = it08.map((g) => {
     })
 
     //todo 宫行列的maybes
+    const resolveM2 = computed(() => {
+      const results: number[] = []
+
+      const itemsG = findSameElements(
+        getG(g)
+          .filter(过滤掉本格)
+          .filter(得到m长度为2的格)
+          .map((e) => e.maybe.value)
+      )
+
+      const itemsH = findSameElements(
+        getH(h)
+          .filter(过滤掉本格)
+          .filter(得到m长度为2的格)
+          .map((e) => e.maybe.value)
+      )
+
+      const itemsL = findSameElements(
+        getL(l)
+          .filter(过滤掉本格)
+          .filter(得到m长度为2的格)
+          .map((e) => e.maybe.value)
+      )
+
+      ;[...itemsG, ...itemsH, ...itemsL].forEach((e) => {
+        maybe.value.forEach((m) => {
+          if (e.sameVal.includes(m)) {
+            results.push(m)
+          }
+        })
+      })
+
+      return results
+    }) as ComputedRef<number[]>
 
     return {
       g,
@@ -125,7 +162,18 @@ export const allItem = it08.map((g) => {
         resolveBasicV1,
         resolveBasicV2,
         resolveM1,
+        resolveM2,
       }),
+    }
+
+    function 过滤掉本格(item: Item) {
+      return !(item.g === g && item.i === i)
+    }
+    function 得到含m的格(m: number) {
+      return (item: Item) => item.maybe.value.includes(m)
+    }
+    function 得到m长度为2的格(item: Item) {
+      return item.maybe.value.length === 2
     }
   })
 })
@@ -138,3 +186,13 @@ function getMaybes_v(items: Item[]) {
 
 const allH3 = allItem.map(chunkH).flat()
 const allL3 = allItem.map(chunkL).flat()
+
+const maybesG = allItem.map((g) => {
+  return computed(() => getMaybes_v(g))
+})
+const maybesH = allItem.map((h) => {
+  return computed(() => getMaybes_v(h))
+})
+const maybesL = allItem.map((l) => {
+  return computed(() => getMaybes_v(l))
+})

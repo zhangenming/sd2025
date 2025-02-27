@@ -93,3 +93,27 @@ export function getL(l: number) {
 export function getG(g: number) {
   return allItem[g]
 }
+
+export function findSameElements(arr: number[][]) {
+  // 用对象存储每个元素出现的索引
+  const indexMap = {} as Record<string, number[]>
+
+  // 遍历数组,记录每个元素的索引
+  arr.forEach((num, idx) => {
+    if (!indexMap[String(num)]) {
+      indexMap[String(num)] = [idx]
+    } else {
+      indexMap[String(num)].push(idx)
+    }
+  })
+
+  // 过滤出现次数超过1次的元素,并格式化输出
+  const result = Object.entries(indexMap)
+    .filter(([_, indices]) => indices.length > 1)
+    .map(([val, idxs]) => ({
+      sameVal: val.split(',').map(Number),
+      idxs: idxs,
+    }))
+
+  return result
+}
