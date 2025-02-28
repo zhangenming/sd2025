@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { allItem, resolveV, resolveM } from './App'
+import { items9G, resolveV, resolveM } from './App'
 
 const hoverValue = ref(0)
 </script>
@@ -16,10 +16,10 @@ const hoverValue = ref(0)
       }
     "
   >
-    <gong v-for="(gong, g) of allItem" class="grid">
-      <template v-for="({ c }, i) of gong">
-        <item v-if="c.v !== 0" :class="{ 'text-black': hoverValue === c.v }">
-          {{ c.v }}
+    <gong v-for="(gong, g) of items9G" class="grid">
+      <template v-for="({ v, maybe }, i) of gong">
+        <item v-if="v.value !== 0" :class="{ 'text-black': hoverValue === v.value }">
+          {{ v.value }}
         </item>
 
         <item
@@ -27,52 +27,48 @@ const hoverValue = ref(0)
           class="grid"
           :class="{
             // 出错判断1
-            'bg-red-600': c.maybe.length === 0,
+            'bg-red-600': maybe.value.length === 0,
           }"
           @click="
             () => {
-              resolveV(g, i, c.resolveBasicV1)
-
-              resolveV(g, i, c.resolveBasicV2)
-
-              c.resolveM1.forEach((r) => {
-                resolveM(g, i, r)
-              })
-              c.resolveM2.forEach((r) => {
-                resolveM(g, i, r)
-              })
+              // resolveM1.value.forEach((r) => {
+              //   resolveM(g, i, r)
+              // })
+              // resolveM2.value.forEach((r) => {
+              //   resolveM(g, i, r)
+              // })
             }
           "
         >
           <maybe
-            v-for="maybe in c.maybe"
-            :style="`grid-area: m${maybe}`"
+            v-for="mb of maybe.value"
+            :style="`grid-area: m${mb.m}`"
             :class="{
               // hover
-              'text-black': hoverValue === maybe,
+              'text-black': hoverValue === mb.m,
 
               // 基本解
-              'bg-blue-200': c.resolveBasicV1 === maybe,
-              'bg-blue-400': c.resolveBasicV2 === maybe,
+              'bg-blue-200': mb.b1,
+              'bg-blue-400': mb.b2(),
 
-              // 排除解
-              'bg-red-200': c.resolveM1.includes(maybe),
-              'bg-red-600': c.resolveM2.includes(maybe),
+              // // 排除解
+              'bg-red-200': mb.m1(),
+              // 'bg-red-600': mb.m2(),
             }"
+            @click="
+              () => {
+                // if (mb.b1 || mb.b2()) {
+                //   resolveV(g, i, mb.m)
+                // }
+                // if (mb.m1() || mb.m2()) {
+                //   resolveM(g, i, mb.m)
+                // }
+                console.log(mb.m2())
+              }
+            "
           >
-            {{ maybe }}
+            {{ mb.m }}
           </maybe>
-        </item>
-      </template>
-    </gong>
-  </div>
-
-  <!-- test -->
-  <div class="grid sdk">
-    <gong v-for="(gong, g) of allItem" class="grid">
-      <template v-for="({ c }, i) of gong">
-        <item :title="c.resolveM3">
-          {{ c.resolveM3 }}
         </item>
       </template>
     </gong>
